@@ -1,0 +1,108 @@
+{
+  "entities": {
+    "Announcement": {
+      "title": "Announcement",
+      "description": "An official MIMO announcement stored in Firestore with Published or Draft visibility.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Required announcement headline.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "description": {
+          "type": "string",
+          "description": "Required full announcement details.",
+          "minLength": 1,
+          "maxLength": 3000
+        },
+        "type": {
+          "type": "string",
+          "description": "Category of the announcement.",
+          "enum": ["General", "Important", "Maintenance"]
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Scheduled or effective announcement date (Firestore Timestamp)."
+        },
+        "status": {
+          "type": "string",
+          "description": "Publication state controlling public visibility.",
+          "enum": ["Published", "Draft"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "UID of the admin who created the announcement.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authorEmail": {
+          "type": "string",
+          "description": "Optional email of the creating admin.",
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "type",
+        "date",
+        "status",
+        "createdAt",
+        "updatedAt",
+        "authorId"
+      ]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized MIMO administrator record.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Verified administrator email address.",
+          "minLength": 3,
+          "maxLength": 256
+        },
+        "role": {
+          "type": "string",
+          "description": "Administrator role identifier.",
+          "enum": ["admin"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when admin access was granted."
+        }
+      },
+      "required": ["email", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/announcements/{announcementId}": {
+      "schema": {
+        "$ref": "#/entities/Announcement"
+      },
+      "description": "Centralized announcements collection. Public users may only read Published documents; verified admins may manage all documents."
+    },
+    "/admins/{adminId}": {
+      "schema": {
+        "$ref": "#/entities/AdminUser"
+      },
+      "description": "Authorized administrator registry keyed by Firebase Auth UID."
+    }
+  }
+}

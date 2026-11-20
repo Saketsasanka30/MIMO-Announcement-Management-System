@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix MIMO Announcement Management System",
+  "description": "Centralized announcement management platform for MIMO with real-time Firebase Firestore synchronization, admin dashboard, and public announcement feed.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

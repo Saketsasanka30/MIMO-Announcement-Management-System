@@ -1,0 +1,153 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'saketsasanka05@gmail.com' ||
+        request.auth.token.email == 'chippesaket@gmail.com'
+      );
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (
+        isVerifiedUser() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidAnnouncement(data) {
+      return data.keys().hasAll([
+          'title',
+          'description',
+          'type',
+          'date',
+          'status',
+          'createdAt',
+          'updatedAt',
+          'authorId'
+        ]) &&
+        data.keys().hasOnly([
+          'title',
+          'description',
+          'type',
+          'date',
+          'status',
+          'createdAt',
+          'updatedAt',
+          'authorId',
+          'authorEmail'
+        ]) &&
+        data.title is string &&
+        data.title.size() >= 1 &&
+        data.title.size() <= 160 &&
+        data.description is string &&
+        data.description.size() >= 1 &&
+        data.description.size() <= 3000 &&
+        data.type is string &&
+        data.type in ['General', 'Important', 'Maintenance'] &&
+        data.date is timestamp &&
+        data.status is string &&
+        data.status in ['Published', 'Draft'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp &&
+        isValidId(data.authorId) &&
+        (!('authorEmail' in data) || (data.authorEmail is string && data.authorEmail.size() <= 256));
+    }
+
+    function isValidAdminUser(data) {
+      return data.keys().hasAll(['email', 'role', 'createdAt']) &&
+        data.keys().hasOnly(['email', 'role', 'createdAt']) &&
+        data.email is string &&
+        data.email.size() >= 3 &&
+        data.email.size() <= 256 &&
+        data.role == 'admin' &&
+        data.createdAt is timestamp;
+    }
+
+    match /announcements/{announcementId} {
+      allow get: if isValidId(announcementId) && (
+        existing().status == 'Published' || isAdmin()
+      );
+
+      allow list: if existing().status == 'Published' ||
+        isBootstrappedAdmin() ||
+        (isVerifiedUser() && existing().authorId == request.auth.uid);
+
+      allow create: if isValidId(announcementId) &&
+        isVerifiedUser() &&
+        isValidAnnouncement(incoming()) &&
+        incoming().authorId == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+
+      allow update: if isValidId(announcementId) &&
+        isVerifiedUser() &&
+        isValidAnnouncement(incoming()) &&
+        isAdmin() &&
+        incoming().authorId == existing().authorId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title',
+            'description',
+            'type',
+            'date',
+            'status',
+            'updatedAt'
+          ])
+        );
+
+      allow delete: if isValidId(announcementId) && isAdmin();
+    }
+
+    match /admins/{adminId} {
+      allow get: if isValidId(adminId) && (
+        isBootstrappedAdmin() ||
+        (isVerifiedUser() && request.auth.uid == adminId)
+      );
+
+      allow list: if isBootstrappedAdmin();
+
+      allow create: if isValidId(adminId) &&
+        isBootstrappedAdmin() &&
+        isValidAdminUser(incoming()) &&
+        incoming().createdAt == request.time;
+
+      allow update: if isValidId(adminId) &&
+        isBootstrappedAdmin() &&
+        isValidAdminUser(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['email', 'role']);
+
+      allow delete: if isValidId(adminId) && isBootstrappedAdmin();
+    }
+  }
+}

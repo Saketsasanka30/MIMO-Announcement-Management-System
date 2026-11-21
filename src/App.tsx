@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { User } from 'firebase/auth';
 import {
   createAnnouncement,
@@ -29,6 +29,7 @@ import { PublicNoticesPage } from './components/PublicNoticesPage';
 
 type AdminView = 'dashboard' | 'editor';
 
+// Use localStorage so the role survives page refreshes and tab closes
 const PORTAL_ROLE_STORAGE_KEY = 'mimo_portal_role';
 
 const PRESET_THEME = {
@@ -40,7 +41,7 @@ const PRESET_THEME = {
 
 function readStoredRole(): PortalRole | null {
   try {
-    const value = window.sessionStorage.getItem(PORTAL_ROLE_STORAGE_KEY);
+    const value = window.localStorage.getItem(PORTAL_ROLE_STORAGE_KEY);
     return value === 'user' || value === 'admin' ? value : null;
   } catch {
     return null;
@@ -50,9 +51,9 @@ function readStoredRole(): PortalRole | null {
 function writeStoredRole(role: PortalRole | null): void {
   try {
     if (role) {
-      window.sessionStorage.setItem(PORTAL_ROLE_STORAGE_KEY, role);
+      window.localStorage.setItem(PORTAL_ROLE_STORAGE_KEY, role);
     } else {
-      window.sessionStorage.removeItem(PORTAL_ROLE_STORAGE_KEY);
+      window.localStorage.removeItem(PORTAL_ROLE_STORAGE_KEY);
     }
   } catch {
     // Ignore storage access errors in restricted environments
@@ -72,13 +73,32 @@ function extractFriendlyError(err: unknown): string {
   return raw;
 }
 
+/** Full-screen loading state shown while Firebase restores the auth session */
+function AppLoadingScreen() {
+  return (
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#556436] via-[#4C5930] to-[#2e381c] z-50">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+        <p className="text-white/80 text-sm font-medium tracking-wide">
+          Restoring your session...
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function MimoAnnouncementApp() {
   const [portalRole, setPortalRoleState] = useState<PortalRole | null>(() => readStoredRole());
   const [adminView, setAdminView] = useState<AdminView>('dashboard');
 
   const [user, setUser] = useState<User | null>(null);
+  // Start as true — Firebase has not yet confirmed session state
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Track if the first auth state event has been received so we can suppress
+  // any premature redirect to the login screen before Firebase initialises.
+  const authInitialisedRef = useRef(false);
 
   const [publishedAnnouncements, setPublishedAnnouncements] = useState<Announcement[]>([]);
   const [loadingPublic, setLoadingPublic] = useState(true);
@@ -120,13 +140,20 @@ function MimoAnnouncementApp() {
     setToasts((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  // Monitor Firebase Auth state & verify admin role
+  // ─── Firebase Auth State Listener ───────────────────────────────────────────
+  // onAuthStateChanged fires once synchronously when the app loads.
+  // Until that first event arrives we keep authLoading = true so we never
+  // show the login page prematurely (which would look like a logout on refresh).
   useEffect(() => {
     const unsubscribe = subscribeAuthState((nextUser) => {
       setUser(nextUser);
+      authInitialisedRef.current = true;
+
       if (!nextUser) {
         setIsAdmin(false);
         setAuthLoading(false);
+        // Only clear the stored role when the user is definitely signed out —
+        // not during the initial loading tick.
         setPortalRole(null);
         setPublishedAnnouncements([]);
         setAdminAnnouncements([]);
@@ -134,10 +161,13 @@ function MimoAnnouncementApp() {
         return;
       }
 
+      // User exists: resolve admin status then drop the loading flag
       setAuthLoading(true);
       void checkIsAdmin(nextUser)
         .then((allowed) => {
           setIsAdmin(allowed);
+          // If Firebase restored a user and they had the admin role stored,
+          // keep them in the admin portal automatically.
         })
         .finally(() => {
           setAuthLoading(false);
@@ -163,7 +193,7 @@ function MimoAnnouncementApp() {
       });
   }, []);
 
-  // Real-time user listener (Published announcements only) when signed in on User portal
+  // ─── Real-time user feed ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!user || portalRole !== 'user') {
       setLoadingPublic(false);
@@ -188,7 +218,7 @@ function MimoAnnouncementApp() {
     return () => unsubscribe();
   }, [user, portalRole]);
 
-  // Real-time admin listener (All announcements: Published + Draft)
+  // ─── Real-time admin feed ────────────────────────────────────────────────────
   useEffect(() => {
     if (!user || !isAdmin || portalRole !== 'admin') {
       setAdminAnnouncements([]);
@@ -214,7 +244,7 @@ function MimoAnnouncementApp() {
     return () => unsubscribe();
   }, [user, isAdmin, portalRole]);
 
-  // Real-time Admin Dashboard summary statistics
+  // ─── Dashboard Stats ─────────────────────────────────────────────────────────
   const stats: DashboardStats = useMemo(() => {
     return adminAnnouncements.reduce<DashboardStats>(
       (acc, item) => {
@@ -229,6 +259,7 @@ function MimoAnnouncementApp() {
     );
   }, [adminAnnouncements]);
 
+  // ─── Announcement Actions ────────────────────────────────────────────────────
   const handleSaveAnnouncement = async (
     input: AnnouncementFormInput,
     editingId?: string
@@ -319,12 +350,22 @@ function MimoAnnouncementApp() {
     setAdminView('editor');
   };
 
+  // ─── Session Flags ───────────────────────────────────────────────────────────
+  // Suppress any content render during the first Firebase auth tick to avoid
+  // a flash of the login screen before the restored session is confirmed.
   const isUserSessionActive = Boolean(user && portalRole === 'user');
   const isAdminSessionActive = Boolean(
     user && portalRole === 'admin' && !authLoading && isAdmin
   );
 
+  // ─── Content Renderer ────────────────────────────────────────────────────────
   const renderMainContent = () => {
+    // Block rendering until Firebase has resolved the initial auth state.
+    // This prevents the login page from briefly flashing on a valid refresh.
+    if (authLoading) {
+      return null; // The AppLoadingScreen overlay handles the UI
+    }
+
     if (isUserSessionActive) {
       return (
         <PublicNoticesPage
@@ -384,7 +425,10 @@ function MimoAnnouncementApp() {
 
   return (
     <div className="relative min-h-screen flex flex-col text-white overflow-x-hidden">
-      {/* Full-Viewport Looping Ambient Video Background + Preset Color Overlay */}
+      {/* Full-screen loading overlay — shown while Firebase restores auth state */}
+      {authLoading && <AppLoadingScreen />}
+
+      {/* Full-Viewport Looping Ambient Video Background */}
       <div className="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
         <div className={`absolute inset-0 ${PRESET_THEME.fallbackGradient}`} />
         <video
@@ -398,10 +442,10 @@ function MimoAnnouncementApp() {
         <div className={`absolute inset-0 ${PRESET_THEME.overlayClass}`} />
       </div>
 
-      {/* Frosted Glass Sticky Website Header (3-Zone Contract) */}
+      {/* Frosted Glass Sticky Header */}
       <header className="sticky top-0 z-40 bg-black/15 backdrop-blur-xl border-b border-white/15">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
-          {/* Zone 1: Brand Title */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-4 sm:gap-8">
+          {/* Brand */}
           <button
             type="button"
             onClick={() => {
@@ -409,12 +453,12 @@ function MimoAnnouncementApp() {
                 setAdminView('dashboard');
               }
             }}
-            className="text-lg font-semibold tracking-tight text-white whitespace-nowrap shrink-0 cursor-pointer"
+            className="text-base sm:text-lg font-semibold tracking-tight text-white whitespace-nowrap shrink-0 cursor-pointer"
           >
             MIMO Announcements
           </button>
 
-          {/* Zone 2: Role-Scoped Navigation Links */}
+          {/* Nav Links — hidden on mobile, shown md+ */}
           {isUserSessionActive ? (
             <nav
               className="hidden md:flex items-center gap-7 text-sm font-medium"
@@ -456,11 +500,11 @@ function MimoAnnouncementApp() {
             <div className="hidden md:block" />
           )}
 
-          {/* Zone 3: Single Primary Action + Profile Avatar */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Right Zone */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className="hidden sm:flex items-center gap-2.5">
               {user && (isUserSessionActive || isAdminSessionActive) && (
-                <span className="text-xs text-white/80 max-w-[180px] truncate">
+                <span className="text-xs text-white/80 max-w-[140px] sm:max-w-[180px] truncate">
                   {user.displayName || user.email}
                 </span>
               )}
@@ -471,15 +515,16 @@ function MimoAnnouncementApp() {
               <button
                 type="button"
                 onClick={openCreatePage}
-                className="px-4 py-2 rounded-full bg-white text-neutral-800 text-xs sm:text-sm font-medium shadow-md hover:bg-neutral-100 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white text-neutral-800 text-xs sm:text-sm font-medium shadow-md hover:bg-neutral-100 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
-                New announcement
+                <span className="hidden sm:inline">New announcement</span>
+                <span className="sm:hidden">+ New</span>
               </button>
             ) : isUserSessionActive ? (
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="px-4 py-2 rounded-full bg-white text-neutral-800 text-xs sm:text-sm font-medium shadow-md hover:bg-neutral-100 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white text-neutral-800 text-xs sm:text-sm font-medium shadow-md hover:bg-neutral-100 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
                 Sign out
               </button>
@@ -487,7 +532,7 @@ function MimoAnnouncementApp() {
               <button
                 type="button"
                 onClick={() => setPortalRole(null)}
-                className="px-4 py-2 rounded-full bg-white/20 border border-white/25 text-white text-xs sm:text-sm font-medium hover:bg-white/30 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/20 border border-white/25 text-white text-xs sm:text-sm font-medium hover:bg-white/30 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
                 Switch role
               </button>
@@ -495,10 +540,10 @@ function MimoAnnouncementApp() {
           </div>
         </div>
 
-        {/* Compact Mobile Navigation Strip (Admin only) */}
+        {/* Mobile Admin Navigation Strip */}
         {isAdminSessionActive && (
           <nav
-            className="md:hidden border-t border-white/15 px-4 py-2 flex items-center gap-5 overflow-x-auto text-xs font-medium"
+            className="md:hidden border-t border-white/15 px-4 py-2 flex items-center gap-5 overflow-x-auto no-scrollbar text-xs font-medium"
             aria-label="Mobile admin navigation"
           >
             <button
@@ -523,12 +568,12 @@ function MimoAnnouncementApp() {
         )}
       </header>
 
-      {/* Main Content Viewport */}
+      {/* Main Content */}
       <main className="flex-1">{renderMainContent()}</main>
 
-      {/* Quiet Glassmorphic Footer */}
+      {/* Footer */}
       <footer className="border-t border-white/15 bg-black/15 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/75">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/75">
           <p>MIMO Announcement Management System</p>
           {isAdminSessionActive ? (
             <div className="flex items-center gap-5">

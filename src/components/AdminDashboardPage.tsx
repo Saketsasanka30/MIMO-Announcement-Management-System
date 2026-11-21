@@ -95,7 +95,7 @@ export function AdminDashboardPage({
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-white/20">
         <div className="stagger-item stagger-delay-1">
-          <p className="text-sm font-medium text-white/75 mb-1.5">
+          <p className="text-sm font-medium text-white/75 mb-1.5 truncate max-w-[260px] sm:max-w-none">
             MIMO Administration · {user.email}
           </p>
           <h1 className="text-white text-[38px] sm:text-[46px] leading-[1.06] font-normal tracking-[-0.03em]">
@@ -201,8 +201,8 @@ export function AdminDashboardPage({
       </section>
 
       {/* Management Toolbar */}
-      <div className="pb-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        <div className="stagger-item stagger-delay-4 relative flex-1 max-w-md bg-white/20 backdrop-blur-xl rounded-2xl border border-white/20 flex items-center px-4 py-2.5">
+      <div className="pb-5 flex flex-col gap-3">
+        <div className="stagger-item stagger-delay-4 relative w-full bg-white/20 backdrop-blur-xl rounded-2xl border border-white/20 flex items-center px-4 py-2.5">
           <Search size={16} className="text-white/70 shrink-0 mr-2.5" />
           <input
             type="text"
@@ -224,39 +224,43 @@ export function AdminDashboardPage({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="stagger-item stagger-delay-4 inline-flex items-center gap-1 p-1 bg-white/20 backdrop-blur-xl rounded-full border border-white/20">
-            {(['All', 'Published', 'Draft'] as const).map((status) => (
-              <button
-                key={status}
-                type="button"
-                onClick={() => setStatusFilter(status)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                  statusFilter === status
-                    ? 'bg-white text-neutral-800 shadow-sm'
-                    : 'text-white/80 hover:text-white'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2.5">
+          <div className="stagger-item stagger-delay-4 overflow-x-auto no-scrollbar w-full sm:w-auto">
+            <div className="inline-flex items-center gap-1 p-1 bg-white/20 backdrop-blur-xl rounded-full border border-white/20 min-w-max">
+              {(['All', 'Published', 'Draft'] as const).map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setStatusFilter(status)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                    statusFilter === status
+                      ? 'bg-white text-neutral-800 shadow-sm'
+                      : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="stagger-item stagger-delay-4 inline-flex items-center gap-1 p-1 bg-white/20 backdrop-blur-xl rounded-full border border-white/20">
-            {(['All', 'General', 'Important', 'Maintenance'] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setTypeFilter(type)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                  typeFilter === type
-                    ? 'bg-white text-neutral-800 shadow-sm'
-                    : 'text-white/80 hover:text-white'
-                }`}
-              >
-                {type}
-              </button>
-            ))}
+          <div className="stagger-item stagger-delay-4 overflow-x-auto no-scrollbar w-full sm:w-auto">
+            <div className="inline-flex items-center gap-1 p-1 bg-white/20 backdrop-blur-xl rounded-full border border-white/20 min-w-max">
+              {(['All', 'General', 'Important', 'Maintenance'] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setTypeFilter(type)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                    typeFilter === type
+                      ? 'bg-white text-neutral-800 shadow-sm'
+                      : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

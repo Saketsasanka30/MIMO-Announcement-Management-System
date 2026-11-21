@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { browserLocalPersistence, getAuth, setPersistence } from 'firebase/auth';
 import { doc, getDocFromServer, getFirestore } from 'firebase/firestore';
 import defaultConfig from '../../firebase-applet-config.json';
 
@@ -8,18 +8,26 @@ const resolvedConfig = {
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || defaultConfig.authDomain,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || defaultConfig.projectId,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || defaultConfig.storageBucket,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || defaultConfig.messagingSenderId,
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || defaultConfig.messagingSenderId,
   appId: import.meta.env.VITE_FIREBASE_APP_ID || defaultConfig.appId,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || defaultConfig.measurementId,
 };
 
 const app = initializeApp(resolvedConfig);
+
 const databaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || defaultConfig.firestoreDatabaseId;
 export const db =
   databaseId && databaseId !== '(default)'
     ? getFirestore(app, databaseId)
     : getFirestore(app);
+
 export const auth = getAuth(app);
+
+// Apply local persistence so sessions survive page refresh and browser restart
+void setPersistence(auth, browserLocalPersistence).catch(() => {
+  // Persistence setting failure is non-fatal (e.g., private browsing mode)
+});
 
 export enum OperationType {
   CREATE = 'create',

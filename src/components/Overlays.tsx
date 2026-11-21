@@ -97,7 +97,7 @@ export function DeleteConfirmDialog({
       aria-modal="true"
       aria-labelledby="delete-dialog-title"
     >
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-200">
+      <div className="bg-white rounded-3xl max-w-sm w-[calc(100vw-2rem)] sm:w-full p-5 sm:p-6 shadow-2xl border border-neutral-200">
         <div className="flex items-start gap-3.5 mb-4">
           <div className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
             <Trash2 size={20} />
@@ -121,12 +121,12 @@ export function DeleteConfirmDialog({
           </p>
         </div>
 
-        <div className="flex items-center justify-end gap-2.5">
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5">
           <button
             type="button"
             disabled={isDeleting}
             onClick={onCancel}
-            className="px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
@@ -134,7 +134,7 @@ export function DeleteConfirmDialog({
             type="button"
             disabled={isDeleting}
             onClick={onConfirm}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer disabled:opacity-60"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 transition-colors cursor-pointer disabled:opacity-60"
           >
             {isDeleting && <Loader2 size={15} className="animate-spin" />}
             {isDeleting ? 'Deleting...' : 'Delete permanently'}
@@ -177,7 +177,7 @@ export function AnnouncementDetailModal({
       aria-modal="true"
       aria-labelledby="detail-dialog-title"
     >
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 max-h-[85vh] flex flex-col">
+      <div className="bg-white rounded-3xl max-w-lg w-[calc(100vw-2rem)] sm:w-full p-5 sm:p-6 shadow-2xl border border-neutral-200 max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2 text-xs font-semibold flex-wrap">
             <span className={`inline-flex items-center gap-1.5 ${typeTone}`}>

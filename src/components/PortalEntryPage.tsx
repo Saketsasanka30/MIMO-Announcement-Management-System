@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react';
 import {
-  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Bell,
@@ -39,7 +38,6 @@ export function PortalEntryPage({
   onSelectRole,
   user,
   authLoading,
-  isAdmin,
   onUserVerifiedRefresh,
   onNotify,
 }: PortalEntryPageProps) {
@@ -157,19 +155,20 @@ export function PortalEntryPage({
     }
   };
 
-  // Step 1: Ask User or Admin at the start
+  // ── Step 1: Role Selection ──────────────────────────────────────────────────
   if (!selectedRole) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="stagger-item stagger-delay-1 max-w-2xl mb-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-16">
+        <div className="stagger-item stagger-delay-1 max-w-2xl mb-8 sm:mb-10">
           <p className="text-sm font-medium text-white/75 mb-2">
             MIMO Announcement Management System
           </p>
-          <h1 className="text-white text-[40px] sm:text-[52px] leading-[1.06] font-normal tracking-[-0.03em] text-balance">
+          <h1 className="text-white text-[32px] sm:text-[40px] md:text-[52px] leading-[1.06] font-normal tracking-[-0.03em] text-balance">
             Choose your portal
           </h1>
-          <p className="text-base text-white/80 mt-3 leading-relaxed">
-            Select whether you are signing in as a User to read live announcements or as an Administrator to manage notices.
+          <p className="text-sm sm:text-base text-white/80 mt-3 leading-relaxed">
+            Select whether you are signing in as a User to read live announcements or as an
+            Administrator to manage notices.
           </p>
           {user && (
             <p className="text-xs text-white/75 mt-3">
@@ -186,27 +185,28 @@ export function PortalEntryPage({
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 items-stretch">
           {/* User Portal Card */}
-          <div className="stagger-item stagger-delay-2 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 p-8 flex flex-col justify-between text-white">
+          <div className="stagger-item stagger-delay-2 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 p-6 sm:p-8 flex flex-col justify-between text-white">
             <div>
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6">
-                <Bell size={22} />
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center mb-5 sm:mb-6">
+                <Bell size={20} />
               </div>
               <p className="text-xs font-medium text-white/75 mb-1.5">Public &amp; Member Access</p>
-              <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.02em]">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-normal tracking-[-0.02em]">
                 I am a User
               </h2>
               <p className="text-sm text-white/80 mt-3 leading-relaxed">
-                Log in or create an account to view official published announcements, priority alerts, and scheduled maintenance updates in real time.
+                Log in or create an account to view official published announcements, priority
+                alerts, and scheduled maintenance updates in real time.
               </p>
             </div>
 
-            <div className="pt-8 mt-8 border-t border-white/15">
+            <div className="pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-white/15">
               <button
                 type="button"
                 onClick={() => handleChooseRole('user')}
-                className="w-full py-3.5 px-5 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer flex items-center justify-between"
+                className="w-full py-3 sm:py-3.5 px-5 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer flex items-center justify-between"
               >
                 <span>Continue as User</span>
                 <ArrowRight size={18} className="text-neutral-700" />
@@ -215,25 +215,26 @@ export function PortalEntryPage({
           </div>
 
           {/* Admin Portal Card */}
-          <div className="stagger-item stagger-delay-3 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 p-8 flex flex-col justify-between text-white">
+          <div className="stagger-item stagger-delay-3 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 p-6 sm:p-8 flex flex-col justify-between text-white">
             <div>
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6">
-                <ShieldCheck size={22} />
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center mb-5 sm:mb-6">
+                <ShieldCheck size={20} />
               </div>
               <p className="text-xs font-medium text-white/75 mb-1.5">Management Workspace</p>
-              <h2 className="text-2xl sm:text-3xl font-normal tracking-[-0.02em]">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-normal tracking-[-0.02em]">
                 I am an Admin
               </h2>
               <p className="text-sm text-white/80 mt-3 leading-relaxed">
-                Sign in with administrator credentials to view admin details and create, edit, publish, or delete announcements synced to every user.
+                Sign in with administrator credentials to view admin details and create, edit,
+                publish, or delete announcements synced to every user.
               </p>
             </div>
 
-            <div className="pt-8 mt-8 border-t border-white/15">
+            <div className="pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-white/15">
               <button
                 type="button"
                 onClick={() => handleChooseRole('admin')}
-                className="w-full py-3.5 px-5 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer flex items-center justify-between"
+                className="w-full py-3 sm:py-3.5 px-5 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer flex items-center justify-between"
               >
                 <span>Continue as Admin</span>
                 <ArrowRight size={18} className="text-neutral-700" />
@@ -247,42 +248,42 @@ export function PortalEntryPage({
 
   const isAdminRole = selectedRole === 'admin';
 
-  // Step 2: Login or Sign Up for selected role (or Admin gate if signed in without admin privileges)
+  // ── Step 2: Auth Form ──────────────────────────────────────────────────────
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 md:py-14">
       <button
         type="button"
         onClick={() => {
           resetFormState();
           onSelectRole(null);
         }}
-        className="stagger-item stagger-delay-1 inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white mb-8 cursor-pointer transition-colors"
+        className="stagger-item stagger-delay-1 inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white mb-6 sm:mb-8 cursor-pointer transition-colors"
       >
         <ArrowLeft size={16} />
         Switch role (User / Admin)
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        {/* Left Role Context Card */}
-        <div className="stagger-item stagger-delay-2 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 text-white p-8 md:p-10 flex flex-col justify-between">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
+        {/* Left — Role Context Card */}
+        <div className="stagger-item stagger-delay-2 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 text-white p-6 sm:p-8 md:p-10 flex flex-col justify-between">
           <div>
-            <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center mb-6">
-              {isAdminRole ? <ShieldCheck size={22} /> : <UserIcon size={22} />}
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 flex items-center justify-center mb-5 sm:mb-6">
+              {isAdminRole ? <ShieldCheck size={20} /> : <UserIcon size={20} />}
             </div>
             <p className="text-sm font-medium text-white/75 mb-2">
               {isAdminRole ? 'MIMO Administration' : 'MIMO Announcements'}
             </p>
-            <h1 className="text-[36px] sm:text-[42px] leading-[1.08] font-normal tracking-[-0.03em] text-balance">
+            <h1 className="text-[28px] sm:text-[36px] md:text-[42px] leading-[1.08] font-normal tracking-[-0.03em] text-balance">
               {isAdminRole ? 'Admin portal' : 'User portal'}
             </h1>
-            <p className="text-base text-white/80 mt-3 leading-relaxed">
+            <p className="text-sm sm:text-base text-white/80 mt-3 leading-relaxed">
               {isAdminRole
                 ? 'Log in or sign up to access your administrator details and create, edit, categorize, date, and delete platform announcements.'
                 : 'Log in or sign up to access the dedicated announcements feed with real-time updates from MIMO administrators.'}
             </p>
           </div>
 
-          <div className="pt-8 mt-8 border-t border-white/15 space-y-2.5 text-sm text-white/85">
+          <div className="pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-white/15 space-y-2.5 text-sm text-white/85">
             {isAdminRole ? (
               <>
                 <p className="flex items-center justify-between">
@@ -317,23 +318,25 @@ export function PortalEntryPage({
           </div>
         </div>
 
-        {/* Right Auth Card */}
-        <div className="stagger-item stagger-delay-3 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 p-8 md:p-10 flex flex-col justify-center text-white">
+        {/* Right — Auth Card */}
+        <div className="stagger-item stagger-delay-3 rounded-3xl bg-white/20 backdrop-blur-xl border border-white/20 p-6 sm:p-8 md:p-10 flex flex-col justify-center text-white">
           {authLoading ? (
             <div className="py-12 flex flex-col items-center justify-center text-center">
               <Loader2 size={28} className="animate-spin text-white mb-3" />
               <p className="text-sm font-medium text-white/85">Checking session...</p>
             </div>
           ) : isAdminRole && user ? (
+            /* Signed-in admin waiting to enter dashboard */
             <div className="space-y-4">
-              <div className="w-11 h-11 rounded-full bg-white/20 text-[#CBD89E] flex items-center justify-center">
-                <ShieldCheck size={22} />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 text-[#CBD89E] flex items-center justify-center">
+                <ShieldCheck size={20} />
               </div>
-              <h2 className="text-2xl font-normal tracking-[-0.02em]">
+              <h2 className="text-xl sm:text-2xl font-normal tracking-[-0.02em]">
                 Signed in as Administrator
               </h2>
               <p className="text-sm text-white/80 leading-relaxed">
-                Signed in as <span className="font-semibold text-white">{user.email}</span>. You have administrative access to publish, edit, and manage announcements.
+                Signed in as <span className="font-semibold text-white">{user.email}</span>. You
+                have administrative access to publish, edit, and manage announcements.
               </p>
               <div className="space-y-2.5 pt-2">
                 <button
@@ -345,198 +348,244 @@ export function PortalEntryPage({
                 </button>
               </div>
             </div>
-          ) : (
-            <div>
-              {/* Login / Sign Up Switcher */}
-              <div className="flex items-center justify-between gap-4 mb-5">
-                <div className="flex items-center gap-2.5">
-                  <Lock size={18} className="text-[#CBD89E]" />
-                  <h2 className="text-2xl font-normal tracking-[-0.02em]">
-                    {authMode === 'login' ? 'Log in' : 'Sign up'}
-                  </h2>
-                </div>
-
-                <div
-                  className="inline-flex items-center gap-1 p-1 bg-white/15 rounded-full border border-white/20"
-                  role="tablist"
-                  aria-label="Authentication mode"
-                >
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={authMode === 'login'}
-                    onClick={() => {
-                      setAuthMode('login');
-                      setAuthError(null);
-                    }}
-                    className={`px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                      authMode === 'login'
-                        ? 'bg-white text-neutral-800 shadow-sm'
-                        : 'text-white/80 hover:text-white'
-                    }`}
-                  >
-                    Log in
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={authMode === 'signup'}
-                    onClick={() => {
-                      setAuthMode('signup');
-                      setAuthError(null);
-                    }}
-                    className={`px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                      authMode === 'signup'
-                        ? 'bg-white text-neutral-800 shadow-sm'
-                        : 'text-white/80 hover:text-white'
-                    }`}
-                  >
-                    Sign up
-                  </button>
-                </div>
+          ) : isAdminRole && !user ? (
+            /* Admin auth form — user not yet signed in */
+            renderAuthForm()
+          ) : !isAdminRole && user ? (
+            /* User email verification prompt */
+            <div className="space-y-4">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 text-[#CBD89E] flex items-center justify-center">
+                <MailCheck size={20} />
               </div>
-
-              <p className="text-sm text-white/75 mb-5">
-                {authMode === 'login'
-                  ? `Sign in to your ${isAdminRole ? 'admin' : 'user'} account with email or Google.`
-                  : `Create a new ${isAdminRole ? 'admin' : 'user'} account to get started.`}
+              <h2 className="text-xl sm:text-2xl font-normal tracking-[-0.02em]">
+                Verify your email
+              </h2>
+              <p className="text-sm text-white/80 leading-relaxed">
+                Signed in as <span className="font-semibold text-white">{user.email}</span>. Check
+                your inbox for the verification link.
               </p>
-
-              <form onSubmit={handleSubmit} className="space-y-3.5">
-                {authMode === 'signup' && (
-                  <div>
-                    <label
-                      htmlFor="portal-full-name"
-                      className="block text-xs font-medium text-white/80 mb-1.5"
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      id="portal-full-name"
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Alex Rivera"
-                      autoComplete="name"
-                      className="w-full rounded-2xl bg-white/15 border border-white/25 px-4 py-3 text-sm text-white placeholder-white/50 outline-none focus:border-white/60"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label
-                    htmlFor="portal-email"
-                    className="block text-xs font-medium text-white/80 mb-1.5"
-                  >
-                    Email Address
-                  </label>
-                  <input
-                    id="portal-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={isAdminRole ? 'admin@mimo.org' : 'you@example.com'}
-                    autoComplete="email"
-                    required
-                    className="w-full rounded-2xl bg-white/15 border border-white/25 px-4 py-3 text-sm text-white placeholder-white/50 outline-none focus:border-white/60"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="portal-password"
-                    className="block text-xs font-medium text-white/80 mb-1.5"
-                  >
-                    Password
-                  </label>
-                  <input
-                    id="portal-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={authMode === 'signup' ? 'At least 6 characters' : 'Enter password'}
-                    autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
-                    required
-                    className="w-full rounded-2xl bg-white/15 border border-white/25 px-4 py-3 text-sm text-white placeholder-white/50 outline-none focus:border-white/60"
-                  />
-                </div>
-
-                {authMode === 'signup' && (
-                  <div>
-                    <label
-                      htmlFor="portal-confirm-password"
-                      className="block text-xs font-medium text-white/80 mb-1.5"
-                    >
-                      Confirm Password
-                    </label>
-                    <input
-                      id="portal-confirm-password"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Re-enter password"
-                      autoComplete="new-password"
-                      required
-                      className="w-full rounded-2xl bg-white/15 border border-white/25 px-4 py-3 text-sm text-white placeholder-white/50 outline-none focus:border-white/60"
-                    />
-                  </div>
-                )}
-
-                {authError && (
-                  <div
-                    role="alert"
-                    className="rounded-2xl bg-[#F5B5B6]/20 border border-[#F5B5B6]/45 p-3 text-xs text-[#FFE5E5] leading-relaxed"
-                  >
-                    {authError}
-                  </div>
-                )}
-
+              <div className="space-y-2.5 pt-2">
                 <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 px-5 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-between"
+                  type="button"
+                  disabled={isRefreshing}
+                  onClick={handleRefreshVerification}
+                  className="w-full py-3 px-4 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
                 >
-                  <span>
-                    {isSubmitting
-                      ? authMode === 'login'
-                        ? 'Signing in...'
-                        : 'Creating account...'
-                      : authMode === 'login'
-                        ? 'Log in with Email'
-                        : 'Create account'}
-                  </span>
-                  {isSubmitting ? (
-                    <Loader2 size={18} className="animate-spin text-neutral-700" />
+                  {isRefreshing ? (
+                    <Loader2 size={16} className="animate-spin" />
                   ) : (
-                    <ArrowRight size={18} className="text-neutral-700" />
+                    <RefreshCw size={16} />
                   )}
+                  I have verified — refresh status
                 </button>
-              </form>
-
-              <div className="flex items-center gap-3 my-5">
-                <div className="h-px flex-1 bg-white/20" />
-                <span className="text-xs text-white/65">or</span>
-                <div className="h-px flex-1 bg-white/20" />
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  className="w-full py-2.5 px-4 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs font-medium transition-colors cursor-pointer"
+                >
+                  Resend verification email
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="w-full py-2.5 px-4 rounded-2xl bg-transparent hover:bg-white/10 text-white/80 text-xs font-medium transition-colors cursor-pointer"
+                >
+                  Sign out and switch account
+                </button>
               </div>
-
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={handleGoogleAuth}
-                className="w-full py-3 px-4 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-sm font-medium transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2.5"
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    fill="#ffffff"
-                    d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81Z"
-                  />
-                </svg>
-                Continue with Google
-              </button>
             </div>
+          ) : (
+            renderAuthForm()
           )}
         </div>
       </div>
     </div>
   );
+
+  function renderAuthForm() {
+    return (
+      <div>
+        {/* Login / Sign Up Toggle */}
+        <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+          <div className="flex items-center gap-2.5">
+            <Lock size={17} className="text-[#CBD89E]" />
+            <h2 className="text-xl sm:text-2xl font-normal tracking-[-0.02em]">
+              {authMode === 'login' ? 'Log in' : 'Sign up'}
+            </h2>
+          </div>
+
+          <div
+            className="inline-flex items-center gap-1 p-1 bg-white/15 rounded-full border border-white/20"
+            role="tablist"
+            aria-label="Authentication mode"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={authMode === 'login'}
+              onClick={() => { setAuthMode('login'); setAuthError(null); }}
+              className={`px-3 sm:px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                authMode === 'login'
+                  ? 'bg-white text-neutral-800 shadow-sm'
+                  : 'text-white/80 hover:text-white'
+              }`}
+            >
+              Log in
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={authMode === 'signup'}
+              onClick={() => { setAuthMode('signup'); setAuthError(null); }}
+              className={`px-3 sm:px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                authMode === 'signup'
+                  ? 'bg-white text-neutral-800 shadow-sm'
+                  : 'text-white/80 hover:text-white'
+              }`}
+            >
+              Sign up
+            </button>
+          </div>
+        </div>
+
+        <p className="text-sm text-white/75 mb-5">
+          {authMode === 'login'
+            ? `Sign in to your ${isAdminRole ? 'admin' : 'user'} account with email or Google.`
+            : `Create a new ${isAdminRole ? 'admin' : 'user'} account to get started.`}
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-3.5">
+          {authMode === 'signup' && (
+            <div>
+              <label
+                htmlFor="portal-full-name"
+                className="block text-xs font-medium text-white/80 mb-1.5"
+              >
+                Full Name
+              </label>
+              <input
+                id="portal-full-name"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Alex Rivera"
+                autoComplete="name"
+                className="w-full rounded-2xl bg-white/15 border border-white/25 px-4 py-3 text-sm text-white placeholder-white/50 outline-none focus:border-white/60"
+              />
+            </div>
+          )}
+
+          <div>
+            <label
+              htmlFor="portal-email"
+              className="block text-xs font-medium text-white/80 mb-1.5"
+            >
+              Email Address
+            </label>
+            <input
+              id="portal-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={isAdminRole ? 'admin@mimo.org' : 'you@example.com'}
+              autoComplete="email"
+              required
+              className="w-full rounded-2xl bg-white/15 border border-white/25 px-4 py-3 text-sm text-white placeholder-white/50 outline-none focus:border-white/60"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="portal-password"
+              className="block text-xs font-medium text-white/80 mb-1.5"
+            >
+              Password
+            </label>
+            <input
+              id="portal-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={authMode === 'signup' ? 'At least 6 characters' : 'Enter password'}
+              autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
+              required
+              className="w-full rounded-2xl bg-white/15 border border-white/25 px-4 py-3 text-sm text-white placeholder-white/50 outline-none focus:border-white/60"
+            />
+          </div>
+
+          {authMode === 'signup' && (
+            <div>
+              <label
+                htmlFor="portal-confirm-password"
+                className="block text-xs font-medium text-white/80 mb-1.5"
+              >
+                Confirm Password
+              </label>
+              <input
+                id="portal-confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter password"
+                autoComplete="new-password"
+                required
+                className="w-full rounded-2xl bg-white/15 border border-white/25 px-4 py-3 text-sm text-white placeholder-white/50 outline-none focus:border-white/60"
+              />
+            </div>
+          )}
+
+          {authError && (
+            <div
+              role="alert"
+              className="rounded-2xl bg-[#F5B5B6]/20 border border-[#F5B5B6]/45 p-3 text-xs text-[#FFE5E5] leading-relaxed"
+            >
+              {authError}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-3 sm:py-3.5 px-5 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-between"
+          >
+            <span>
+              {isSubmitting
+                ? authMode === 'login'
+                  ? 'Signing in...'
+                  : 'Creating account...'
+                : authMode === 'login'
+                  ? 'Log in with Email'
+                  : 'Create account'}
+            </span>
+            {isSubmitting ? (
+              <Loader2 size={18} className="animate-spin text-neutral-700" />
+            ) : (
+              <ArrowRight size={18} className="text-neutral-700" />
+            )}
+          </button>
+        </form>
+
+        <div className="flex items-center gap-3 my-4 sm:my-5">
+          <div className="h-px flex-1 bg-white/20" />
+          <span className="text-xs text-white/65">or</span>
+          <div className="h-px flex-1 bg-white/20" />
+        </div>
+
+        <button
+          type="button"
+          disabled={isSubmitting}
+          onClick={handleGoogleAuth}
+          className="w-full py-3 px-4 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-sm font-medium transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2.5"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="#ffffff"
+              d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81Z"
+            />
+          </svg>
+          Continue with Google
+        </button>
+      </div>
+    );
+  }
 }

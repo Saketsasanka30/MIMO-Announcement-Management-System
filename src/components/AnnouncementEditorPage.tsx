@@ -49,7 +49,7 @@ function TypeFaceSvg({
       height="60"
       viewBox="0 0 64 64"
       fill="none"
-      className="w-14 h-14 transition-transform"
+      className="w-10 h-10 sm:w-14 sm:h-14 transition-transform"
       aria-hidden="true"
     >
       <circle

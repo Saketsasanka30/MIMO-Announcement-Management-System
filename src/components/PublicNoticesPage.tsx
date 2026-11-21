@@ -86,8 +86,8 @@ export function PublicNoticesPage({
       </div>
 
       {/* Glassmorphic Search, Filter & Sort Toolbar */}
-      <div className="py-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="stagger-item stagger-delay-3 relative flex-1 max-w-md bg-white/20 backdrop-blur-xl rounded-2xl border border-white/20 flex items-center px-4 py-2.5">
+      <div className="py-6 flex flex-col gap-4">
+        <div className="stagger-item stagger-delay-3 relative w-full bg-white/20 backdrop-blur-xl rounded-2xl border border-white/20 flex items-center px-4 py-2.5">
           <Search size={17} className="text-white/75 shrink-0 mr-2.5" />
           <input
             type="text"
@@ -109,50 +109,54 @@ export function PublicNoticesPage({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div
-            className="stagger-item stagger-delay-3 inline-flex items-center gap-1 p-1 bg-white/20 backdrop-blur-md rounded-full border border-white/15"
-            role="group"
-            aria-label="Filter announcements by type"
-          >
-            {(['All', 'General', 'Important', 'Maintenance'] as TypeFilter[]).map((type) => {
-              const active = selectedType === type;
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setSelectedType(type)}
-                  className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                    active
-                      ? 'bg-white text-neutral-800 shadow-sm'
-                      : 'text-white/85 hover:text-white'
-                  }`}
-                >
-                  {type}
-                </button>
-              );
-            })}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2.5">
+          <div className="overflow-x-auto no-scrollbar w-full sm:w-auto">
+            <div
+              className="stagger-item stagger-delay-3 inline-flex items-center gap-1 p-1 bg-white/20 backdrop-blur-md rounded-full border border-white/15 min-w-max"
+              role="group"
+              aria-label="Filter announcements by type"
+            >
+              {(['All', 'General', 'Important', 'Maintenance'] as TypeFilter[]).map((type) => {
+                const active = selectedType === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setSelectedType(type)}
+                    className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                      active
+                        ? 'bg-white text-neutral-800 shadow-sm'
+                        : 'text-white/85 hover:text-white'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
-            className="stagger-item stagger-delay-3 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-medium text-white hover:bg-white/30 transition-colors cursor-pointer whitespace-nowrap shrink-0"
-          >
-            <ArrowDownUp size={14} />
-            {sortOrder === 'newest' ? 'Newest first' : 'Oldest first'}
-          </button>
-
-          {hasActiveFilters && (
+          <div className="flex items-center gap-2.5 flex-wrap">
             <button
               type="button"
-              onClick={handleClearFilters}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-neutral-800 text-xs sm:text-sm font-medium shadow-md hover:bg-neutral-100 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              onClick={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
+              className="stagger-item stagger-delay-3 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-medium text-white hover:bg-white/30 transition-colors cursor-pointer whitespace-nowrap shrink-0"
             >
-              <X size={14} />
-              Clear filters
+              <ArrowDownUp size={14} />
+              {sortOrder === 'newest' ? 'Newest first' : 'Oldest first'}
             </button>
-          )}
+
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-neutral-800 text-xs sm:text-sm font-medium shadow-md hover:bg-neutral-100 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              >
+                <X size={14} />
+                Clear filters
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

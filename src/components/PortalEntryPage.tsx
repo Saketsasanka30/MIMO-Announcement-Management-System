@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import type { User } from 'firebase/auth';
 import {
-  BOOTSTRAPPED_ADMIN_EMAIL,
   getFriendlyAuthError,
   refreshCurrentUser,
   resendVerificationEmail,
@@ -90,7 +89,7 @@ export function PortalEntryPage({
           'success',
           'Account created',
           selectedRole === 'admin'
-            ? 'Account created. Verify your email address to activate admin access.'
+            ? 'Administrator account created successfully.'
             : 'Welcome to MIMO Announcements.'
         );
       }
@@ -325,72 +324,24 @@ export function PortalEntryPage({
               <Loader2 size={28} className="animate-spin text-white mb-3" />
               <p className="text-sm font-medium text-white/85">Checking session...</p>
             </div>
-          ) : isAdminRole && user && !user.emailVerified ? (
+          ) : isAdminRole && user ? (
             <div className="space-y-4">
               <div className="w-11 h-11 rounded-full bg-white/20 text-[#CBD89E] flex items-center justify-center">
-                <MailCheck size={22} />
+                <ShieldCheck size={22} />
               </div>
               <h2 className="text-2xl font-normal tracking-[-0.02em]">
-                Verify your email address
+                Signed in as Administrator
               </h2>
               <p className="text-sm text-white/80 leading-relaxed">
-                Signed in as <span className="font-semibold text-white">{user.email}</span>. Administrator actions require a verified email address. Check your inbox for the verification link, or continue to the User announcements page.
-              </p>
-              <div className="space-y-2.5 pt-2">
-                <button
-                  type="button"
-                  disabled={isRefreshing}
-                  onClick={handleRefreshVerification}
-                  className="w-full py-3 px-4 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {isRefreshing ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <RefreshCw size={16} />
-                  )}
-                  I have verified — refresh status
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResendVerification}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs font-medium transition-colors cursor-pointer"
-                >
-                  Resend verification email
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-transparent hover:bg-white/10 text-white/80 text-xs font-medium transition-colors cursor-pointer"
-                >
-                  Sign out and switch account
-                </button>
-              </div>
-            </div>
-          ) : isAdminRole && user && !isAdmin ? (
-            <div className="space-y-4">
-              <div className="w-11 h-11 rounded-full bg-[#F5B5B6]/25 text-[#FFE4E5] flex items-center justify-center">
-                <AlertTriangle size={22} />
-              </div>
-              <h2 className="text-2xl font-normal tracking-[-0.02em]">
-                Administrator access required
-              </h2>
-              <p className="text-sm text-white/80 leading-relaxed">
-                Signed in as <span className="font-semibold text-white">{user.email}</span>, which is not authorized for MIMO Admin access. Sign in with the administrator account ({BOOTSTRAPPED_ADMIN_EMAIL}) or switch to the User announcements portal.
+                Signed in as <span className="font-semibold text-white">{user.email}</span>. You have administrative access to publish, edit, and manage announcements.
               </p>
               <div className="space-y-2.5 pt-2">
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="w-full py-3.5 px-5 rounded-2xl bg-white text-neutral-800 text-sm font-medium shadow-lg hover:bg-neutral-100 transition-colors cursor-pointer"
-                >
-                  Sign out and switch account
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleChooseRole('user')}
                   className="w-full py-3 px-4 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-sm font-medium transition-colors cursor-pointer"
                 >
-                  Open User Announcements instead
+                  Sign out and switch account
                 </button>
               </div>
             </div>

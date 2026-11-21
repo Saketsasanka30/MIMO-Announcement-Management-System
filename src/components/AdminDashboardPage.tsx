@@ -22,7 +22,7 @@ import type {
   DashboardStats,
 } from '../types/announcement';
 import { formatDisplayDate } from '../lib/announcements';
-import { isBootstrappedAdminEmail, signOutAccount } from '../lib/auth';
+import { signOutAccount } from '../lib/auth';
 
 interface AdminDashboardPageProps {
   user: User;
@@ -135,9 +135,7 @@ export function AdminDashboardPage({
               </h2>
             </div>
             <p className="text-xs text-[#CBD89E] font-medium">
-              {isBootstrappedAdminEmail(user.email)
-                ? 'Primary Bootstrapped Admin · Verified'
-                : 'Authorized Admin · Verified'}
+              Administrator · Active
             </p>
           </div>
 

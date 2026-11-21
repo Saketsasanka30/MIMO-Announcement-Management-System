@@ -321,7 +321,7 @@ function MimoAnnouncementApp() {
 
   const isUserSessionActive = Boolean(user && portalRole === 'user');
   const isAdminSessionActive = Boolean(
-    user && portalRole === 'admin' && !authLoading && user.emailVerified && isAdmin
+    user && portalRole === 'admin' && !authLoading && isAdmin
   );
 
   const renderMainContent = () => {

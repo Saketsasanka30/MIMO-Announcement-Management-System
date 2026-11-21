@@ -7,37 +7,15 @@ service cloud.firestore {
     }
 
     function isValidId(id) {
-      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      return id is string && id.size() >= 1 && id.size() <= 128;
     }
 
     function incoming() {
       return request.resource.data;
     }
 
-    function existing() {
-      return resource.data;
-    }
-
     function isSignedIn() {
       return request.auth != null;
-    }
-
-    function isVerifiedUser() {
-      return isSignedIn() && request.auth.token.email_verified == true;
-    }
-
-    function isBootstrappedAdmin() {
-      return isVerifiedUser() && (
-        request.auth.token.email == 'saketsasanka05@gmail.com' ||
-        request.auth.token.email == 'chippesaket@gmail.com'
-      );
-    }
-
-    function isAdmin() {
-      return isBootstrappedAdmin() || (
-        isVerifiedUser() &&
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-      );
     }
 
     function isValidAnnouncement(data) {
@@ -50,17 +28,6 @@ service cloud.firestore {
           'createdAt',
           'updatedAt',
           'authorId'
-        ]) &&
-        data.keys().hasOnly([
-          'title',
-          'description',
-          'type',
-          'date',
-          'status',
-          'createdAt',
-          'updatedAt',
-          'authorId',
-          'authorEmail'
         ]) &&
         data.title is string &&
         data.title.size() >= 1 &&
@@ -79,75 +46,40 @@ service cloud.firestore {
         (!('authorEmail' in data) || (data.authorEmail is string && data.authorEmail.size() <= 256));
     }
 
-    function isValidAdminUser(data) {
-      return data.keys().hasAll(['email', 'role', 'createdAt']) &&
-        data.keys().hasOnly(['email', 'role', 'createdAt']) &&
-        data.email is string &&
-        data.email.size() >= 3 &&
-        data.email.size() <= 256 &&
-        data.role == 'admin' &&
-        data.createdAt is timestamp;
-    }
-
     match /announcements/{announcementId} {
+      // Anyone can get a published notice; signed-in users can read any notice
       allow get: if isValidId(announcementId) && (
-        existing().status == 'Published' || isAdmin()
+        (resource != null && resource.data.status == 'Published') || isSignedIn()
       );
 
-      allow list: if existing().status == 'Published' ||
-        isBootstrappedAdmin() ||
-        (isVerifiedUser() && existing().authorId == request.auth.uid);
+      // Public users can query published notices; signed-in users can query all notices
+      allow list: if (resource != null && resource.data.status == 'Published') || isSignedIn();
 
+      // Any signed-in user can create an announcement (open to all admins)
       allow create: if isValidId(announcementId) &&
-        isVerifiedUser() &&
-        isValidAnnouncement(incoming()) &&
+        isSignedIn() &&
         incoming().authorId == request.auth.uid &&
-        incoming().createdAt == request.time &&
-        incoming().updatedAt == request.time &&
-        isAdmin();
+        isValidAnnouncement(incoming());
 
+      // Any signed-in user can update an announcement
       allow update: if isValidId(announcementId) &&
-        isVerifiedUser() &&
-        isValidAnnouncement(incoming()) &&
-        isAdmin() &&
-        incoming().authorId == existing().authorId &&
-        incoming().createdAt == existing().createdAt &&
-        incoming().updatedAt == request.time &&
-        (
-          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) ||
-          incoming().diff(existing()).affectedKeys().hasOnly([
-            'title',
-            'description',
-            'type',
-            'date',
-            'status',
-            'updatedAt'
-          ])
+        isSignedIn() && (
+          !('title' in incoming()) || (incoming().title is string && incoming().title.size() >= 1 && incoming().title.size() <= 160)
+        ) && (
+          !('description' in incoming()) || (incoming().description is string && incoming().description.size() >= 1 && incoming().description.size() <= 3000)
+        ) && (
+          !('status' in incoming()) || (incoming().status in ['Published', 'Draft'])
+        ) && (
+          !('type' in incoming()) || (incoming().type in ['General', 'Important', 'Maintenance'])
         );
 
-      allow delete: if isValidId(announcementId) && isAdmin();
+      // Any signed-in user can delete an announcement
+      allow delete: if isValidId(announcementId) && isSignedIn();
     }
 
+    // Admins collection: any signed-in user can manage admin entries
     match /admins/{adminId} {
-      allow get: if isValidId(adminId) && (
-        isBootstrappedAdmin() ||
-        (isVerifiedUser() && request.auth.uid == adminId)
-      );
-
-      allow list: if isBootstrappedAdmin();
-
-      allow create: if isValidId(adminId) &&
-        isBootstrappedAdmin() &&
-        isValidAdminUser(incoming()) &&
-        incoming().createdAt == request.time;
-
-      allow update: if isValidId(adminId) &&
-        isBootstrappedAdmin() &&
-        isValidAdminUser(incoming()) &&
-        incoming().createdAt == existing().createdAt &&
-        incoming().diff(existing()).affectedKeys().hasOnly(['email', 'role']);
-
-      allow delete: if isValidId(adminId) && isBootstrappedAdmin();
+      allow read, write: if isSignedIn();
     }
   }
 }

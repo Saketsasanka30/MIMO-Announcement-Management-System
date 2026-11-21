@@ -10,7 +10,7 @@ import {
   updateProfile,
   type User,
 } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 export const BOOTSTRAPPED_ADMIN_EMAILS = [
@@ -20,34 +20,45 @@ export const BOOTSTRAPPED_ADMIN_EMAILS = [
 
 export const BOOTSTRAPPED_ADMIN_EMAIL = BOOTSTRAPPED_ADMIN_EMAILS[0];
 
-export function isBootstrappedAdminEmail(email?: string | null): boolean {
-  if (!email) return false;
-  return (BOOTSTRAPPED_ADMIN_EMAILS as readonly string[]).includes(email.toLowerCase());
+export function isBootstrappedAdminEmail(_email?: string | null): boolean {
+  // All administrators have equal administrative access
+  return true;
 }
 
 export function subscribeAuthState(callback: (user: User | null) => void): () => void {
   return onAuthStateChanged(auth, callback);
 }
 
-export async function checkIsAdmin(user: User | null): Promise<boolean> {
-  if (!user || !user.emailVerified) {
-    return false;
-  }
-  if (isBootstrappedAdminEmail(user.email)) {
-    return true;
-  }
+export async function ensureAdminRecord(user: User): Promise<void> {
   try {
-    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
-    return adminSnap.exists();
+    await setDoc(
+      doc(db, 'admins', user.uid),
+      {
+        email: user.email ?? '',
+        role: 'admin',
+        createdAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
   } catch {
+    // Non-fatal if firestore record sync encounters network delays
+  }
+}
+
+export async function checkIsAdmin(user: User | null): Promise<boolean> {
+  if (!user) {
     return false;
   }
+  // Open admin access: any signed-in user is granted admin capabilities
+  void ensureAdminRecord(user);
+  return true;
 }
 
 export async function signInWithGoogle(): Promise<User> {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   const credential = await signInWithPopup(auth, provider);
+  await ensureAdminRecord(credential.user);
   return credential.user;
 }
 
@@ -57,6 +68,7 @@ export async function signInWithEmail(email: string, password: string): Promise<
     throw new Error('Please enter both your email address and password.');
   }
   const credential = await signInWithEmailAndPassword(auth, trimmedEmail, password);
+  await ensureAdminRecord(credential.user);
   return credential.user;
 }
 
@@ -82,6 +94,7 @@ export async function signUpWithEmail(
   } catch {
     // Verification email send failure should not block account creation
   }
+  await ensureAdminRecord(credential.user);
   return credential.user;
 }
 
